@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getProfile, signOut } from "@/app/actions/auth";
 import CartIcon from "@/app/components/cart-icon";
+import MobileNav from "@/app/components/mobile-nav";
 
 export default async function HomePage() {
   const { user, profile } = await getProfile();
@@ -10,12 +11,13 @@ export default async function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-[var(--surface-200)] bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <MobileNav />
             <Link href="/" className="flex items-center gap-2">
               <div className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--brand-600)] text-white shadow-md">
                 <span className="font-bold">L</span>
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">
+              <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:block">
                 Lumina
               </span>
             </Link>

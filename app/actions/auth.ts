@@ -20,6 +20,11 @@ export async function signUp(formData: FormData) {
       return { error: "All fields are required." };
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { error: "Please enter a valid email address." };
+    }
+
     if (password.length < 6) {
       return { error: "Password must be at least 6 characters." };
     }
@@ -58,6 +63,11 @@ export async function signIn(formData: FormData) {
 
     if (!email || !password) {
       return { error: "Email and password are required." };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { error: "Please enter a valid email address." };
     }
 
     const { error } = await supabase.auth.signInWithPassword({

@@ -3,6 +3,7 @@ import { getProfile, signOut } from "@/app/actions/auth";
 import Image from "next/image";
 import AddToCartButton from "@/app/components/add-to-cart-button";
 import CartIcon from "@/app/components/cart-icon";
+import MobileNav from "@/app/components/mobile-nav";
 
 // Mock Data for Premium Apparel
 const PRODUCTS = [
@@ -60,12 +61,13 @@ export default async function ProductsPage() {
       {/* Navigation Bar */}
       <header className="sticky top-0 z-50 border-b border-[var(--surface-200)] bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <MobileNav />
             <Link href="/" className="flex items-center gap-2 transition hover:opacity-80">
               <div className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--brand-600)] text-white shadow-md">
                 <span className="font-bold">L</span>
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">
+              <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:block">
                 Lumina
               </span>
             </Link>
@@ -149,7 +151,7 @@ export default async function ProductsPage() {
                 />
                 
                 {/* Add to Cart Overlay */}
-                <div className="absolute inset-x-0 bottom-0 z-20 p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <div className="absolute inset-x-0 bottom-0 z-20 p-4 opacity-100 md:opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                   <AddToCartButton product={product} />
                 </div>
               </div>

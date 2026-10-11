@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   keywords: ["apparel", "clothing", "Sri Lanka", "linen shirts", "tees", "bags", "fashion"],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"

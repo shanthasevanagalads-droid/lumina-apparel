@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export type CartItem = {
-  id: number;
+  id: string;
   name: string;
   price: number;
   image: string;
@@ -13,8 +13,8 @@ export type CartItem = {
 type CartContextType = {
   cart: CartItem[];
   addToCart: (product: any) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
@@ -57,18 +57,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      // Parse numeric price from "₨ 8,500" format
-      const numericPrice = Number(product.price.replace(/[^0-9]/g, ""));
-      return [...prev, { ...product, price: numericPrice, quantity: 1 }];
+      // If price is a string like "₨ 8,500", parse it, otherwise use it directly
+      const numericPrice = typeof product.price === 'string' 
+        ? Number(product.price.replace(/[^0-9.]/g, "")) 
+        : Number(product.price);
+      return [...prev, { ...product, price: numericPrice, quantity: 1, image: product.image_url || product.image }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id);
       return;
