@@ -1,60 +1,100 @@
 import Link from "next/link";
 import { getProfile, signOut } from "@/app/actions/auth";
-import Image from "next/image";
-import AddToCartButton from "@/app/components/add-to-cart-button";
+import { createClient } from "@/lib/supabase/server";
 import CartIcon from "@/app/components/cart-icon";
 import MobileNav from "@/app/components/mobile-nav";
+import ProductCatalog, { ProductItem } from "./ProductCatalog";
 
-// Mock Data for Premium Apparel
-const PRODUCTS = [
+// Curated fallback in case the database is temporarily unreachable or empty
+const FALLBACK_PRODUCTS: ProductItem[] = [
   {
-    id: 1,
+    id: "fb-1",
     name: "Classic Linen Overshirt",
-    price: "₨ 8,500",
+    price: 85.00,
+    currency: "USD",
     category: "Men's Collection",
-    image: "/classic_linen_overshirt.jpg",
+    image_url: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&q=80&w=800",
+    description: "Breathable pure linen overshirt tailored for everyday smart-casual layering.",
+    inventory_count: 24,
     isNew: true,
   },
   {
-    id: 2,
+    id: "fb-2",
     name: "Minimalist Essential Tee",
-    price: "₨ 3,200",
+    price: 32.00,
+    currency: "USD",
     category: "Essentials",
-    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800",
+    image_url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800",
+    description: "Ultra-soft 100% organic cotton staple tee featuring clean seams and durable neck rib.",
+    inventory_count: 50,
   },
   {
-    id: 3,
+    id: "fb-3",
     name: "Tailored Chino Trousers",
-    price: "₨ 7,900",
+    price: 79.00,
+    currency: "USD",
     category: "Men's Bottoms",
-    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=800",
+    image_url: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=800",
+    description: "Modern tapered chinos woven from comfortable stretch cotton twill.",
+    inventory_count: 18,
   },
   {
-    id: 4,
+    id: "fb-4",
     name: "Silk Blend Resort Shirt",
-    price: "₨ 9,500",
+    price: 95.00,
+    currency: "USD",
     category: "Summer Edit",
-    image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800",
+    image_url: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800",
+    description: "Lightweight Cuban-collar shirt cut from a luxurious silk-cotton blend.",
+    inventory_count: 12,
     isNew: true,
   },
   {
-    id: 5,
+    id: "fb-5",
     name: "Structured Denim Jacket",
-    price: "₨ 14,000",
+    price: 140.00,
+    currency: "USD",
     category: "Outerwear",
-    image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&q=80&w=800",
+    image_url: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&q=80&w=800",
+    description: "Heavyweight 14oz raw selvedge denim jacket finished with matte silver hardware.",
+    inventory_count: 8,
   },
   {
-    id: 6,
+    id: "fb-6",
     name: "Merino Wool Knit Sweater",
-    price: "₨ 12,500",
+    price: 125.00,
+    currency: "USD",
     category: "Winter Essentials",
-    image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800",
+    image_url: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800",
+    description: "Fine gauge extrafine merino wool crewneck providing natural thermoregulation.",
+    inventory_count: 15,
   },
 ];
 
 export default async function ProductsPage() {
   const { user, profile } = await getProfile();
+
+  // Fetch real products dynamically from Supabase
+  let products: ProductItem[] = [];
+  try {
+    const supabase = await createClient();
+    const { data: dbProducts, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Supabase products query error:", error.message);
+      products = FALLBACK_PRODUCTS;
+    } else if (dbProducts && dbProducts.length > 0) {
+      products = dbProducts;
+    } else {
+      products = FALLBACK_PRODUCTS;
+    }
+  } catch (err) {
+    console.error("Failed to connect to Supabase products table:", err);
+    products = FALLBACK_PRODUCTS;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--background)]">
@@ -108,8 +148,12 @@ export default async function ProductsPage() {
       <main className="flex-1 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 w-full animate-fade-in">
         
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-100 text-[var(--brand-700)] text-xs font-bold mb-3">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+              Live Supabase Catalog
+            </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
               Latest Arrivals
             </h1>
@@ -117,65 +161,10 @@ export default async function ProductsPage() {
               Explore our curated selection of premium apparel. Designed for comfort, styled for everyday elegance.
             </p>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-xl border border-[var(--surface-200)] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-[var(--surface-50)] transition-all">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter
-            </button>
-            <button className="flex items-center gap-2 rounded-xl border border-[var(--surface-200)] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-[var(--surface-50)] transition-all">
-              Sort by: Featured
-            </button>
-          </div>
         </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {PRODUCTS.map((product, idx) => (
-            <div key={product.id} className="group relative animate-scale-in" style={{ animationDelay: `${idx * 100}ms` }}>
-              {/* Image Container */}
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[var(--surface-100)]">
-                {product.isNew && (
-                  <div className="absolute top-4 left-4 z-10 rounded-full bg-[var(--brand-900)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-lg">
-                    New
-                  </div>
-                )}
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-                
-                {/* Add to Cart Overlay */}
-                <div className="absolute inset-x-0 bottom-0 z-20 p-4 opacity-100 md:opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <AddToCartButton product={product} />
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="mt-5 flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {product.category}
-                  </p>
-                  <h3 className="mt-1 text-base font-bold text-slate-900">
-                    <Link href="#">
-                      <span className="absolute inset-0" />
-                      {product.name}
-                    </Link>
-                  </h3>
-                </div>
-                <p className="text-base font-bold text-slate-900 bg-[var(--brand-50)] px-2 py-1 rounded-md text-[var(--brand-700)]">
-                  {product.price}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Dynamic Product Catalog with Search, Filters & Sorting */}
+        <ProductCatalog products={products} />
       </main>
     </div>
   );

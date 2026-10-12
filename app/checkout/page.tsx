@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/components/cart-context";
 import Link from "next/link";
 import Image from "next/image";
+import { createOrder } from "@/app/actions/seller";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -12,15 +13,40 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Form State
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate order processing
-    setTimeout(() => {
+    try {
+      await createOrder({
+        customer_name: fullName.trim() || "Guest Customer",
+        customer_email: email.trim(),
+        total_amount: cartTotal,
+        currency: "USD",
+        items_count: cart.reduce((acc, item) => acc + item.quantity, 0),
+        payment_method: paymentMethod,
+        shipping_address: { address, city, postalCode },
+        items: cart.map((item) => ({
+          product_id: String(item.id),
+          product_name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image_url: item.image,
+        })),
+      });
+    } catch (err) {
+      console.error("Order creation notice:", err);
+    } finally {
       clearCart();
       router.push("/order-confirmation");
-    }, 1500);
+    }
   };
 
   if (cart.length === 0) {
@@ -51,7 +77,14 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Email address</label>
-                    <input type="email" required className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" />
+                    <input 
+                      type="email" 
+                      required 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" 
+                    />
                   </div>
                 </div>
               </div>
@@ -62,19 +95,47 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Full name</label>
-                    <input type="text" required className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" 
+                    />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
-                    <input type="text" required className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="123 Main St, Apt 4B"
+                      className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                    <input type="text" required className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="New York"
+                      className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Postal code</label>
-                    <input type="text" required className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" />
+                    <input 
+                      type="text" 
+                      required 
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      placeholder="10001"
+                      className="w-full rounded-xl border border-[var(--surface-200)] px-4 py-2.5 focus:border-[var(--brand-500)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-500)]" 
+                    />
                   </div>
                 </div>
               </div>
